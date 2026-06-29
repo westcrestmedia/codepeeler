@@ -356,17 +356,17 @@ code {
 }
 .code-line {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.42rem;
-  line-height: 1.45;
+  font-size: 0.56rem;
+  line-height: 1.5;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: clip;
   color: rgba(255,255,255,0.55);
   flex-shrink: 0;
-  animation: lineIn 0.08s ease-out;
+  animation: lineIn 0.22s ease-out;
 }
 @keyframes lineIn {
-  from { opacity: 0; transform: translateY(4px); }
+  from { opacity: 0; transform: translateY(3px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 .code-line.indent  { padding-left: 8px; }
