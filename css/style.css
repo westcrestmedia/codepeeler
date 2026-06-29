@@ -344,16 +344,25 @@ code {
 .face-code {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  justify-content: flex-end;
+  gap: 3px;
   width: 100%;
+  height: calc(100% - 36px);
   overflow: hidden;
+  position: relative;
 }
 .code-line {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.58rem;
-  line-height: 1.5;
+  font-size: 0.62rem;
+  line-height: 1.55;
   white-space: nowrap;
-  color: rgba(255,255,255,0.45);
+  color: rgba(255,255,255,0.5);
+  flex-shrink: 0;
+  animation: slideInLine 0.15s ease-out;
+}
+@keyframes slideInLine {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 .code-line.indent  { padding-left: 10px; }
 .code-line.indent2 { padding-left: 20px; }
@@ -369,6 +378,19 @@ code {
 .c-fn   { color: rgba(255,184,108,0.85); }
 .c-at   { color: rgba(123,97,255,0.9); }
 .c-num  { color: rgba(0,255,156,0.85); }
+.c-comment { color: rgba(255,255,255,0.3); font-style: italic; }
+
+.cube-cursor {
+  display: inline-block;
+  color: rgba(0,212,255,0.9);
+  font-size: 0.55rem;
+  animation: cubeBlink 0.7s step-end infinite;
+  vertical-align: middle;
+}
+@keyframes cubeBlink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
 
 /* Floating tags */
 .floating-tag {
