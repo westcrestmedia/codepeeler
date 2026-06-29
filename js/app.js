@@ -457,9 +457,9 @@ function formatBytes(bytes) {
 
 const CUBE_PERIOD  = 18000;  // ms — must match CSS animation duration
 const VIS_RANGE    = 82;     // degrees half-window of visibility
-const CHAR_MS      = 8;      // ms per character (very fast)
-const LINE_MS      = 35;     // ms pause after line complete
-const MAX_LINES    = 16;     // enough lines to fill full cube face
+const CHAR_MS      = 22;     // ms per character — smooth, readable
+const LINE_MS      = 110;    // ms pause after line complete — relaxed
+const MAX_LINES    = 12;     // fills full face height at 0.56rem font
 
 // cubeY when this face points toward camera
 const FACE_CAM_ANGLE = {
