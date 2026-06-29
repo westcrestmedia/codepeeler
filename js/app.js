@@ -447,287 +447,317 @@ function formatBytes(bytes) {
 }
 
 // ─── Cube Typing Animation ────────────────────
-// Cube rotates at 18s/360deg = 0.333 deg/ms
-// Faces: front=0, right=90, back=180, left=270
-// Visible threshold: face angle within ±70deg of camera (front view)
+// CSS: rotateCube goes rotateX(15deg) rotateY(0→360deg) in 18s
+// Face CSS transforms:
+//   face-front:  rotateY(0deg)    translateZ(110px)  → visible at cube Y=0
+//   face-right:  rotateY(90deg)   translateZ(110px)  → visible at cube Y=270 (360-90)
+//   face-back:   rotateY(180deg)  translateZ(110px)  → visible at cube Y=180
+//   face-left:   rotateY(-90deg)  translateZ(110px)  → visible at cube Y=90
+// A face is "front-facing" when cubeY ≈ faceOffset (within ±75deg)
 
-const CUBE_PERIOD   = 18000; // ms for full rotation
-const VISIBLE_RANGE = 80;    // degrees either side of 0/360 = visible
-const CHAR_SPEED    = 42;    // ms per character
-const LINE_PAUSE    = 200;   // ms pause after each line
-const MAX_VISIBLE   = 6;     // max lines shown at once (scroll effect)
+const CUBE_PERIOD  = 18000;  // ms — must match CSS animation duration
+const VIS_RANGE    = 82;     // degrees half-window of visibility
+const CHAR_MS      = 28;     // ms per character (faster)
+const LINE_MS      = 140;    // ms pause after line complete
+const MAX_LINES    = 7;      // max lines before scroll-up
 
-const faceAngles = {
+// cubeY when this face points toward camera
+const FACE_CAM_ANGLE = {
   'face-front': 0,
-  'face-right':  90,
+  'face-left':  90,   // rotateY(-90) on face means cube must be at +90 to bring it forward
   'face-back':  180,
-  'face-left':  270,
+  'face-right': 270,  // rotateY(+90) on face means cube must be at 270 to bring it forward
 };
 
-// Longer, richer code per face — more characters to type
-const cubeCodeLines = {
+const FACE_CODE = {
   'face-front': [
-    { text: '<!DOCTYPE html>', cls: 'c-tag' },
-    { text: '<html lang="en">', cls: 'c-tag' },
-    { text: '<head>', cls: 'c-tag' },
-    { text: '  <meta charset="UTF-8">', cls: 'c-tag' },
-    { text: '  <title>CodePeeler</title>', cls: 'c-tag' },
-    { text: '  <link rel="stylesheet"', cls: 'c-tag' },
-    { text: '    href="style.css">', cls: 'c-str' },
-    { text: '</head>', cls: 'c-tag' },
-    { text: '<body>', cls: 'c-tag' },
-    { text: '<nav class="navbar">', cls: 'c-tag' },
-    { text: '  <a class="logo">', cls: 'c-tag' },
-    { text: '    <span>⟨/⟩</span>', cls: 'c-tag' },
-    { text: '    CodePeeler', cls: '' },
-    { text: '  </a>', cls: 'c-tag' },
-    { text: '  <ul class="links">', cls: 'c-tag' },
-    { text: '    <li><a href="#tool">', cls: 'c-tag' },
-    { text: '      Try Now', cls: '' },
-    { text: '    </a></li>', cls: 'c-tag' },
-    { text: '  </ul>', cls: 'c-tag' },
-    { text: '</nav>', cls: 'c-tag' },
-    { text: '<section class="hero">', cls: 'c-tag' },
-    { text: '  <h1>One Messy File.</h1>', cls: 'c-tag' },
-    { text: '  <p>Upload entangled HTML</p>', cls: 'c-tag' },
-    { text: '  <a href="#tool">', cls: 'c-tag' },
-    { text: '    Start Peeling →', cls: '' },
-    { text: '  </a>', cls: 'c-tag' },
-    { text: '</section>', cls: 'c-tag' },
-    { text: '<script src="app.js">', cls: 'c-tag' },
-    { text: '</script>', cls: 'c-tag' },
-    { text: '</body>', cls: 'c-tag' },
-    { text: '</html>', cls: 'c-tag' },
-  ],
-  'face-back': [
-    { text: '/* CodePeeler Styles */', cls: 'c-comment' },
-    { text: ':root {', cls: 'c-sel' },
-    { text: '  --bg: #080811;', cls: 'c-prop' },
-    { text: '  --cyan: #00D4FF;', cls: 'c-prop' },
-    { text: '  --purple: #7B61FF;', cls: 'c-prop' },
-    { text: '  --green: #00FF9C;', cls: 'c-prop' },
-    { text: '}', cls: '' },
-    { text: 'body {', cls: 'c-sel' },
-    { text: '  background: var(--bg);', cls: 'c-prop' },
-    { text: '  color: #E8E8F0;', cls: 'c-val' },
-    { text: '  font-family: Inter;', cls: 'c-prop' },
-    { text: '  overflow-x: hidden;', cls: 'c-prop' },
-    { text: '}', cls: '' },
-    { text: '.navbar {', cls: 'c-sel' },
-    { text: '  position: fixed;', cls: 'c-prop' },
-    { text: '  top: 0; left: 0;', cls: 'c-prop' },
-    { text: '  backdrop-filter:', cls: 'c-prop' },
-    { text: '    blur(20px);', cls: 'c-val' },
-    { text: '  z-index: 100;', cls: 'c-prop' },
-    { text: '}', cls: '' },
-    { text: '.hero {', cls: 'c-sel' },
-    { text: '  min-height: 100vh;', cls: 'c-prop' },
-    { text: '  display: flex;', cls: 'c-prop' },
-    { text: '  align-items: center;', cls: 'c-prop' },
-    { text: '}', cls: '' },
-    { text: '.hero-title {', cls: 'c-sel' },
-    { text: '  font-size: clamp(', cls: 'c-prop' },
-    { text: '    2.5rem, 6vw, 4rem);', cls: 'c-val' },
-    { text: '  font-weight: 700;', cls: 'c-prop' },
-    { text: '}', cls: '' },
-    { text: '.btn-primary {', cls: 'c-sel' },
-    { text: '  background: linear-gradient(', cls: 'c-prop' },
-    { text: '    135deg, cyan, purple);', cls: 'c-val' },
-    { text: '}', cls: '' },
+    { t: '<!DOCTYPE html>',              c: 'c-tag' },
+    { t: '<html lang="en">',             c: 'c-tag' },
+    { t: '<head>',                       c: 'c-tag' },
+    { t: '  <meta charset="UTF-8">',     c: 'c-tag' },
+    { t: '  <meta name="viewport"',      c: 'c-tag' },
+    { t: '    content="width=device-width">', c: 'c-str' },
+    { t: '  <title>CodePeeler</title>',  c: 'c-tag' },
+    { t: '  <link rel="stylesheet"',     c: 'c-tag' },
+    { t: '        href="css/style.css">', c: 'c-str' },
+    { t: '</head>',                      c: 'c-tag' },
+    { t: '<body>',                       c: 'c-tag' },
+    { t: '<nav class="navbar" id="navbar">', c: 'c-tag' },
+    { t: '  <div class="nav-inner">',    c: 'c-tag' },
+    { t: '    <a href="#" class="nav-logo">', c: 'c-tag' },
+    { t: '      <span>⟨/⟩</span>',      c: 'c-tag' },
+    { t: '      CodePeeler',             c: '' },
+    { t: '    </a>',                     c: 'c-tag' },
+    { t: '    <ul class="nav-links">',   c: 'c-tag' },
+    { t: '      <li><a href="#tool">',   c: 'c-tag' },
+    { t: '        Try Now',              c: '' },
+    { t: '      </a></li>',             c: 'c-tag' },
+    { t: '    </ul>',                    c: 'c-tag' },
+    { t: '  </div>',                     c: 'c-tag' },
+    { t: '</nav>',                       c: 'c-tag' },
+    { t: '<section class="hero">',       c: 'c-tag' },
+    { t: '  <div class="hero-content">', c: 'c-tag' },
+    { t: '    <h1>One Messy File.</h1>', c: 'c-tag' },
+    { t: '    <p>Perfect Output.</p>',   c: 'c-tag' },
+    { t: '    <a href="#tool"',          c: 'c-tag' },
+    { t: '       class="btn btn-primary">', c: 'c-str' },
+    { t: '      Start Peeling →',        c: '' },
+    { t: '    </a>',                     c: 'c-tag' },
+    { t: '  </div>',                     c: 'c-tag' },
+    { t: '</section>',                   c: 'c-tag' },
+    { t: '<script src="js/app.js">',     c: 'c-tag' },
+    { t: '</script>',                    c: 'c-tag' },
+    { t: '</body>',                      c: 'c-tag' },
+    { t: '</html>',                      c: 'c-tag' },
   ],
   'face-left': [
-    { text: '/* CodePeeler App */', cls: 'c-comment' },
-    { text: 'const state = {', cls: 'c-kw' },
-    { text: '  files: [],', cls: '' },
-    { text: '  processing: false,', cls: '' },
-    { text: '  outputZip: null,', cls: '' },
-    { text: '};', cls: '' },
-    { text: 'const $ = id =>', cls: 'c-kw' },
-    { text: '  document.getElementById(id);', cls: 'c-fn' },
-    { text: 'const dropzone = $("dropzone");', cls: 'c-fn' },
-    { text: 'const processBtn = $("processBtn");', cls: 'c-fn' },
-    { text: 'async function handleFiles(files) {', cls: 'c-kw' },
-    { text: '  for (const file of files) {', cls: 'c-kw' },
-    { text: '    if (file.name.endsWith(', cls: '' },
-    { text: '        ".zip")) {', cls: 'c-str' },
-    { text: '      await extractZip(file);', cls: 'c-fn' },
-    { text: '    } else {', cls: 'c-kw' },
-    { text: '      const txt =', cls: 'c-kw' },
-    { text: '        await readFile(file);', cls: 'c-fn' },
-    { text: '      addFile(file.name, txt);', cls: 'c-fn' },
-    { text: '    }', cls: '' },
-    { text: '  }', cls: '' },
-    { text: '  renderFileList();', cls: 'c-fn' },
-    { text: '}', cls: '' },
-    { text: 'async function processFile(f) {', cls: 'c-kw' },
-    { text: '  const res = await fetch(', cls: 'c-fn' },
-    { text: '    API_URL, { method: "POST",', cls: 'c-str' },
-    { text: '    body: JSON.stringify(f)', cls: 'c-fn' },
-    { text: '  });', cls: '' },
-    { text: '  return res.json();', cls: 'c-kw' },
-    { text: '}', cls: '' },
-    { text: 'startCubeTyping();', cls: 'c-fn' },
+    { t: '/* CodePeeler — app.js */',    c: 'c-comment' },
+    { t: "const API = 'https://",        c: 'c-str' },
+    { t: "  api.anthropic.com/v1';",     c: 'c-str' },
+    { t: 'const state = {',              c: 'c-kw' },
+    { t: '  files: [],',                 c: '' },
+    { t: '  processing: false,',         c: '' },
+    { t: '  outputZip: null,',           c: '' },
+    { t: '};',                           c: '' },
+    { t: 'const $ = id =>',              c: 'c-kw' },
+    { t: '  document.getElementById(id);', c: 'c-fn' },
+    { t: 'const dropzone = $("dropzone");', c: 'c-fn' },
+    { t: 'const processBtn =',           c: 'c-kw' },
+    { t: '  $("processBtn");',           c: 'c-fn' },
+    { t: 'async function handleFiles(rawFiles) {', c: 'c-kw' },
+    { t: '  for (const f of rawFiles) {', c: 'c-kw' },
+    { t: '    if (f.name.endsWith(".zip")) {', c: 'c-str' },
+    { t: '      await extractZip(f);',   c: 'c-fn' },
+    { t: '    } else if (f.name',        c: 'c-kw' },
+    { t: '      .endsWith(".html")) {',  c: 'c-str' },
+    { t: '      const txt =',            c: 'c-kw' },
+    { t: '        await readFile(f);',   c: 'c-fn' },
+    { t: '      addFile(f.name, txt);',  c: 'c-fn' },
+    { t: '    }',                        c: '' },
+    { t: '  }',                          c: '' },
+    { t: '  renderFileList();',          c: 'c-fn' },
+    { t: '}',                            c: '' },
+    { t: 'processBtn.addEventListener(', c: 'c-fn' },
+    { t: "  'click', startProcessing);", c: 'c-str' },
+    { t: 'async function startProcessing() {', c: 'c-kw' },
+    { t: '  if (!state.files.length) return;', c: '' },
+    { t: '  state.processing = true;',   c: '' },
+    { t: '  const zip = new JSZip();',   c: 'c-fn' },
+    { t: '  for (const file of state.files) {', c: 'c-kw' },
+    { t: '    const result =',           c: 'c-kw' },
+    { t: '      await processFileWithAI(file);', c: 'c-fn' },
+    { t: '    zip.file(file.name, result.html);', c: 'c-fn' },
+    { t: '  }',                          c: '' },
+    { t: '  const blob = await zip',     c: 'c-fn' },
+    { t: "    .generateAsync({type:'blob'});", c: 'c-str' },
+    { t: '  state.outputZip = blob;',    c: '' },
+    { t: '}',                            c: '' },
+  ],
+  'face-back': [
+    { t: '/* CodePeeler — style.css */', c: 'c-comment' },
+    { t: ':root {',                      c: 'c-sel' },
+    { t: '  --bg:     #080811;',         c: 'c-prop' },
+    { t: '  --cyan:   #00D4FF;',         c: 'c-prop' },
+    { t: '  --purple: #7B61FF;',         c: 'c-prop' },
+    { t: '  --green:  #00FF9C;',         c: 'c-prop' },
+    { t: '  --orange: #FFB86C;',         c: 'c-prop' },
+    { t: '  --radius: 12px;',            c: 'c-prop' },
+    { t: '}',                            c: '' },
+    { t: 'body {',                       c: 'c-sel' },
+    { t: '  background: var(--bg);',     c: 'c-prop' },
+    { t: '  color: #E8E8F0;',            c: 'c-val' },
+    { t: "  font-family: 'Inter',sans-serif;", c: 'c-prop' },
+    { t: '  overflow-x: hidden;',        c: 'c-prop' },
+    { t: '}',                            c: '' },
+    { t: '.navbar {',                    c: 'c-sel' },
+    { t: '  position: fixed;',           c: 'c-prop' },
+    { t: '  top: 0; left: 0; right: 0;', c: 'c-prop' },
+    { t: '  backdrop-filter: blur(20px);', c: 'c-val' },
+    { t: '  z-index: 100;',              c: 'c-prop' },
+    { t: '  border-bottom: 1px solid',  c: 'c-prop' },
+    { t: '    var(--border);',           c: 'c-val' },
+    { t: '}',                            c: '' },
+    { t: '.hero {',                      c: 'c-sel' },
+    { t: '  min-height: 100vh;',         c: 'c-prop' },
+    { t: '  display: flex;',             c: 'c-prop' },
+    { t: '  align-items: center;',       c: 'c-prop' },
+    { t: '  padding: 120px 24px 80px;',  c: 'c-prop' },
+    { t: '}',                            c: '' },
+    { t: '.hero-title {',                c: 'c-sel' },
+    { t: '  font-size: clamp(',          c: 'c-prop' },
+    { t: '    2.5rem, 6vw, 4rem);',      c: 'c-val' },
+    { t: '  font-weight: 700;',          c: 'c-prop' },
+    { t: '  color: #fff;',               c: 'c-val' },
+    { t: '}',                            c: '' },
+    { t: '.btn-primary {',               c: 'c-sel' },
+    { t: '  background: linear-gradient(', c: 'c-prop' },
+    { t: '    135deg,',                  c: '' },
+    { t: '    var(--cyan),',             c: 'c-val' },
+    { t: '    var(--purple));',          c: 'c-val' },
+    { t: '  color: #000;',               c: 'c-val' },
+    { t: '}',                            c: '' },
   ],
   'face-right': [
-    { text: '/* Responsive Styles */', cls: 'c-comment' },
-    { text: '@media (max-width: 900px) {', cls: 'c-at' },
-    { text: '  .cube-scene {', cls: 'c-sel' },
-    { text: '    display: none;', cls: 'c-prop' },
-    { text: '  }', cls: '' },
-    { text: '  .hero-content {', cls: 'c-sel' },
-    { text: '    max-width: 100%;', cls: 'c-prop' },
-    { text: '  }', cls: '' },
-    { text: '  .steps-grid {', cls: 'c-sel' },
-    { text: '    flex-direction: column;', cls: 'c-prop' },
-    { text: '  }', cls: '' },
-    { text: '  .tool-wrapper {', cls: 'c-sel' },
-    { text: '    grid-template-columns: 1fr;', cls: 'c-prop' },
-    { text: '  }', cls: '' },
-    { text: '}', cls: '' },
-    { text: '@media (max-width: 600px) {', cls: 'c-at' },
-    { text: '  .hero {', cls: 'c-sel' },
-    { text: '    padding: 100px 20px 60px;', cls: 'c-prop' },
-    { text: '  }', cls: '' },
-    { text: '  .features-grid {', cls: 'c-sel' },
-    { text: '    grid-template-columns: 1fr;', cls: 'c-prop' },
-    { text: '  }', cls: '' },
-    { text: '  .footer-bottom {', cls: 'c-sel' },
-    { text: '    flex-direction: column;', cls: 'c-prop' },
-    { text: '    text-align: center;', cls: 'c-prop' },
-    { text: '  }', cls: '' },
-    { text: '}', cls: '' },
-    { text: '@media (prefers-reduced-motion) {', cls: 'c-at' },
-    { text: '  .cube { animation: none; }', cls: 'c-prop' },
-    { text: '}', cls: '' },
+    { t: '/* Responsive — mobile.css */', c: 'c-comment' },
+    { t: '@media (max-width: 900px) {',  c: 'c-at' },
+    { t: '  .cube-scene {',              c: 'c-sel' },
+    { t: '    display: none;',           c: 'c-prop' },
+    { t: '  }',                          c: '' },
+    { t: '  .nav-links, .btn-nav {',     c: 'c-sel' },
+    { t: '    display: none;',           c: 'c-prop' },
+    { t: '  }',                          c: '' },
+    { t: '  .nav-hamburger {',           c: 'c-sel' },
+    { t: '    display: flex;',           c: 'c-prop' },
+    { t: '  }',                          c: '' },
+    { t: '  .steps-grid {',              c: 'c-sel' },
+    { t: '    flex-direction: column;',  c: 'c-prop' },
+    { t: '  }',                          c: '' },
+    { t: '  .features-grid {',           c: 'c-sel' },
+    { t: '    grid-template-columns:',   c: 'c-prop' },
+    { t: '      1fr 1fr;',               c: 'c-val' },
+    { t: '  }',                          c: '' },
+    { t: '  .tool-wrapper {',            c: 'c-sel' },
+    { t: '    grid-template-columns:',   c: 'c-prop' },
+    { t: '      1fr;',                   c: 'c-val' },
+    { t: '  }',                          c: '' },
+    { t: '}',                            c: '' },
+    { t: '@media (max-width: 600px) {',  c: 'c-at' },
+    { t: '  .hero {',                    c: 'c-sel' },
+    { t: '    padding: 100px 20px 60px;', c: 'c-prop' },
+    { t: '  }',                          c: '' },
+    { t: '  h1 { font-size: 2rem; }',    c: 'c-prop' },
+    { t: '  .footer-bottom {',           c: 'c-sel' },
+    { t: '    flex-direction: column;',  c: 'c-prop' },
+    { t: '    text-align: center;',      c: 'c-prop' },
+    { t: '  }',                          c: '' },
+    { t: '}',                            c: '' },
+    { t: '@media (prefers-reduced-motion) {', c: 'c-at' },
+    { t: '  .cube { animation: none; }', c: 'c-prop' },
+    { t: '  .reveal { opacity: 1; }',    c: 'c-prop' },
+    { t: '}',                            c: '' },
   ],
 };
 
-// Track per-face state
-const faceStates = {};
-
-function isFaceVisible(faceClass) {
-  const startTime = faceStates[faceClass]?.startTime || cubeStartTime;
-  const elapsed = (Date.now() - cubeStartTime) % CUBE_PERIOD;
-  const currentAngle = (elapsed / CUBE_PERIOD) * 360; // 0..360
-  const faceAngle = faceAngles[faceClass];
-  // Normalize angle difference to -180..180
-  let diff = ((currentAngle - faceAngle) + 360) % 360;
-  if (diff > 180) diff -= 360;
-  return Math.abs(diff) <= VISIBLE_RANGE;
-}
-
+// Per-face animation state
+const faceState = {};
 let cubeStartTime = Date.now();
 
-function initFaceState(faceClass) {
-  const face = document.querySelector('.' + faceClass);
-  if (!face) return;
+function angularDiff(a, b) {
+  // shortest angular distance from b to a, result in -180..180
+  let d = ((a - b) % 360 + 360) % 360;
+  if (d > 180) d -= 360;
+  return d;
+}
+
+function getFaceVisibility(faceKey) {
+  const elapsed = (Date.now() - cubeStartTime) % CUBE_PERIOD;
+  const cubeY = (elapsed / CUBE_PERIOD) * 360; // 0..360
+  const targetAngle = FACE_CAM_ANGLE[faceKey];
+  const diff = Math.abs(angularDiff(cubeY, targetAngle));
+  // Also compute how far into the visible window we are (0=just entering, 1=dead center)
+  const visibility = Math.max(0, 1 - diff / VIS_RANGE);
+  return { visible: diff < VIS_RANGE, diff, visibility };
+}
+
+function getFaceContainer(faceKey) {
+  const face = document.querySelector('.' + faceKey);
+  if (!face) return null;
   let container = face.querySelector('.face-code');
   if (!container) {
     container = document.createElement('div');
     container.className = 'face-code';
     face.appendChild(container);
   }
-  faceStates[faceClass] = {
-    container,
-    lineIndex: 0,
-    charIndex: 0,
-    currentLineEl: null,
-    typing: false,
-    wasVisible: false,
-    timer: null,
-  };
+  return container;
 }
 
-function resetFace(faceClass) {
-  const s = faceStates[faceClass];
+function resetFaceState(faceKey) {
+  const s = faceState[faceKey];
   if (!s) return;
   clearTimeout(s.timer);
-  s.container.innerHTML = '';
-  s.lineIndex = 0;
-  s.charIndex = 0;
-  s.currentLineEl = null;
-  s.typing = false;
+  s.lineIdx = 0;
+  s.charIdx = 0;
+  s.curEl = null;
+  s.active = false;
+  const container = getFaceContainer(faceKey);
+  if (container) container.innerHTML = '';
 }
 
-function typeNextChar(faceClass) {
-  const s = faceStates[faceClass];
-  if (!s) return;
+function typeChar(faceKey) {
+  const s = faceState[faceKey];
+  if (!s || !s.active) return;
 
-  // Stop if face went invisible
-  if (!isFaceVisible(faceClass)) {
-    s.typing = false;
-    resetFace(faceClass);
+  const { visible } = getFaceVisibility(faceKey);
+  if (!visible) {
+    resetFaceState(faceKey);
     return;
   }
 
-  const lines = cubeCodeLines[faceClass];
-  if (!lines) return;
+  const lines = FACE_CODE[faceKey];
+  const container = getFaceContainer(faceKey);
+  if (!container) return;
 
-  // Wrap around continuously
-  if (s.lineIndex >= lines.length) {
-    s.lineIndex = 0;
-  }
+  // Loop back to start seamlessly
+  if (s.lineIdx >= lines.length) s.lineIdx = 0;
 
-  const { text, cls } = lines[s.lineIndex];
+  const { t, c } = lines[s.lineIdx];
 
-  // Start new line element
-  if (s.charIndex === 0) {
-    s.currentLineEl = document.createElement('div');
-    s.currentLineEl.className = 'code-line' + (cls ? ' ' + cls : '');
-    const cursor = document.createElement('span');
-    cursor.className = 'cube-cursor';
-    cursor.textContent = '▋';
-    s.currentLineEl.appendChild(cursor);
-    s.container.appendChild(s.currentLineEl);
+  // New line — create element
+  if (s.charIdx === 0) {
+    s.curEl = document.createElement('div');
+    s.curEl.className = 'code-line' + (c ? ' ' + c : '');
+    // cursor span
+    const cur = document.createElement('span');
+    cur.className = 'cube-cursor';
+    cur.textContent = '▋';
+    s.curEl.appendChild(cur);
+    container.appendChild(s.curEl);
 
-    // Scroll effect: remove oldest line if too many visible
-    const allLines = s.container.querySelectorAll('.code-line');
-    if (allLines.length > MAX_VISIBLE) {
+    // Scroll-up: remove oldest line if over max
+    const allLines = container.querySelectorAll('.code-line');
+    if (allLines.length > MAX_LINES) {
       allLines[0].remove();
     }
   }
 
-  if (s.charIndex < text.length) {
-    // Type one character
-    const cursor = s.currentLineEl.querySelector('.cube-cursor');
-    const textNode = document.createTextNode(text[s.charIndex]);
-    s.currentLineEl.insertBefore(textNode, cursor);
-    s.charIndex++;
-    s.timer = setTimeout(() => typeNextChar(faceClass), CHAR_SPEED);
+  if (s.charIdx < t.length) {
+    const cur = s.curEl.querySelector('.cube-cursor');
+    s.curEl.insertBefore(document.createTextNode(t[s.charIdx]), cur);
+    s.charIdx++;
+    s.timer = setTimeout(() => typeChar(faceKey), CHAR_MS);
   } else {
-    // Line done
-    const cursor = s.currentLineEl.querySelector('.cube-cursor');
-    if (cursor) cursor.remove();
-    s.lineIndex++;
-    s.charIndex = 0;
-    s.currentLineEl = null;
-    s.timer = setTimeout(() => typeNextChar(faceClass), LINE_PAUSE);
+    // Line done — remove cursor, next line
+    const cur = s.curEl.querySelector('.cube-cursor');
+    if (cur) cur.remove();
+    s.lineIdx++;
+    s.charIdx = 0;
+    s.curEl = null;
+    s.timer = setTimeout(() => typeChar(faceKey), LINE_MS);
   }
 }
 
-function startTypingOnFace(faceClass) {
-  const s = faceStates[faceClass];
-  if (!s || s.typing) return;
-  s.typing = true;
-  typeNextChar(faceClass);
-}
-
 function startCubeTyping() {
-  // Init all face states
-  Object.keys(faceAngles).forEach(initFaceState);
+  // Init state for all faces
+  Object.keys(FACE_CAM_ANGLE).forEach(key => {
+    faceState[key] = {
+      lineIdx: 0, charIdx: 0,
+      curEl: null, active: false,
+      timer: null,
+    };
+  });
 
-  // Poll every 200ms to check which faces are visible
+  // Poll every 100ms — check visibility and start/stop typing
   setInterval(() => {
-    Object.keys(faceAngles).forEach(faceClass => {
-      const s = faceStates[faceClass];
-      if (!s) return;
-      const visible = isFaceVisible(faceClass);
-      if (visible && !s.typing) {
-        startTypingOnFace(faceClass);
+    Object.keys(FACE_CAM_ANGLE).forEach(key => {
+      const { visible } = getFaceVisibility(key);
+      const s = faceState[key];
+      if (visible && !s.active) {
+        s.active = true;
+        typeChar(key);
       }
-      // If it just became invisible, reset will happen inside typeNextChar
+      // reset is handled inside typeChar when !visible
     });
-  }, 200);
+  }, 100);
 }
 
 startCubeTyping();
