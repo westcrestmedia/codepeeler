@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CodePeeler — Separate HTML, CSS & JS Instantly</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- ░░ NAVBAR ░░ -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-inner">
+      <a href="#" class="nav-logo">
+        <span class="logo-icon">⟨/⟩</span>
+        <span class="logo-text">CodePeeler</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="#how-it-works">How it Works</a></li>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#tool">Try Now</a></li>
+      </ul>
+      <a href="#tool" class="btn btn-nav">Try Free →</a>
+      <button class="nav-hamburger" id="navHamburger" aria-label="Open menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+    <div class="nav-mobile" id="navMobile">
+      <a href="#how-it-works">How it Works</a>
+      <a href="#features">Features</a>
+      <a href="#tool">Try Now</a>
+    </div>
+  </nav>
+
+  <!-- ░░ HERO ░░ -->
+  <section class="hero" id="hero">
+    <!-- Ambient background particles -->
+    <div class="hero-bg">
+      <div class="grid-overlay"></div>
+      <div class="ambient-glow glow-1"></div>
+      <div class="ambient-glow glow-2"></div>
+      <div class="ambient-glow glow-3"></div>
+    </div>
+
+    <!-- 3D Rotating Cube -->
+    <div class="cube-scene" aria-hidden="true">
+      <div class="cube">
+        <div class="cube-face face-front">
+          <span class="face-label html">&lt;HTML&gt;</span>
+          <div class="face-lines">
+            <div class="face-line" style="width:70%"></div>
+            <div class="face-line" style="width:50%"></div>
+            <div class="face-line" style="width:80%"></div>
+            <div class="face-line accent" style="width:60%"></div>
+            <div class="face-line" style="width:45%"></div>
+          </div>
+        </div>
+        <div class="cube-face face-back">
+          <span class="face-label css">.CSS {}</span>
+          <div class="face-lines">
+            <div class="face-line css-line" style="width:65%"></div>
+            <div class="face-line css-line" style="width:80%"></div>
+            <div class="face-line" style="width:55%"></div>
+            <div class="face-line css-line" style="width:70%"></div>
+            <div class="face-line" style="width:40%"></div>
+          </div>
+        </div>
+        <div class="cube-face face-left">
+          <span class="face-label js">JS ()</span>
+          <div class="face-lines">
+            <div class="face-line js-line" style="width:75%"></div>
+            <div class="face-line" style="width:60%"></div>
+            <div class="face-line js-line" style="width:85%"></div>
+            <div class="face-line" style="width:50%"></div>
+            <div class="face-line js-line" style="width:65%"></div>
+          </div>
+        </div>
+        <div class="cube-face face-right">
+          <span class="face-label mobile">📱 Mobile</span>
+          <div class="face-lines">
+            <div class="face-line mobile-line" style="width:55%"></div>
+            <div class="face-line" style="width:70%"></div>
+            <div class="face-line mobile-line" style="width:45%"></div>
+            <div class="face-line" style="width:80%"></div>
+            <div class="face-line mobile-line" style="width:60%"></div>
+          </div>
+        </div>
+        <div class="cube-face face-top">
+          <span class="face-label zip">📦 ZIP</span>
+        </div>
+        <div class="cube-face face-bottom">
+          <span class="face-label input">Upload</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Floating code snippets -->
+    <div class="floating-tag tag-1" aria-hidden="true"><span class="tag-html">&lt;div class="app"&gt;</span></div>
+    <div class="floating-tag tag-2" aria-hidden="true"><span class="tag-css">.navbar { position: fixed; }</span></div>
+    <div class="floating-tag tag-3" aria-hidden="true"><span class="tag-js">const init = () =&gt; { ... }</span></div>
+    <div class="floating-tag tag-4" aria-hidden="true"><span class="tag-html">&lt;/section&gt;</span></div>
+
+    <div class="hero-content">
+      <div class="hero-badge">
+        <span class="badge-dot"></span>
+        AI-Powered Code Splitter
+      </div>
+      <h1 class="hero-title">
+        One Messy File.<br/>
+        <span class="title-gradient">Perfect Output.</span>
+      </h1>
+      <p class="hero-subtitle">
+        Upload your entangled HTML files — CSS, JS, everything in one blob — and CodePeeler separates them into clean, organized, production-ready files. All 40 pages. In one go.
+      </p>
+      <div class="hero-actions">
+        <a href="#tool" class="btn btn-primary">
+          <span>Start Peeling</span>
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+        <a href="#how-it-works" class="btn btn-ghost">See how it works</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat">
+          <span class="stat-num">40+</span>
+          <span class="stat-label">Pages at once</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <span class="stat-num">5</span>
+          <span class="stat-label">Output types</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <span class="stat-num">Free</span>
+          <span class="stat-label">Forever</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ░░ HOW IT WORKS ░░ -->
+  <section class="section how-it-works" id="how-it-works">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-eyebrow">Process</span>
+        <h2 class="section-title">How CodePeeler Works</h2>
+        <p class="section-desc">Three steps from chaos to clean code</p>
+      </div>
+
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-icon-wrap" style="--accent:#00D4FF">
+            <div class="step-icon">
+              <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+              </svg>
+            </div>
+          </div>
+          <div class="step-num">01</div>
+          <h3>Upload Your Files</h3>
+          <p>Drop your messy HTML files or a ZIP with all pages. One file or forty — CodePeeler handles bulk without breaking a sweat.</p>
+          <div class="step-tags">
+            <span class="tag">.html</span>
+            <span class="tag">.zip</span>
+          </div>
+        </div>
+
+        <div class="step-connector" aria-hidden="true">
+          <div class="connector-line"></div>
+          <div class="connector-arrow">→</div>
+        </div>
+
+        <div class="step-card">
+          <div class="step-icon-wrap" style="--accent:#7B61FF">
+            <div class="step-icon">
+              <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+              </svg>
+            </div>
+          </div>
+          <div class="step-num">02</div>
+          <h3>Tell AI What to Do</h3>
+          <p>Give simple instructions: "Separate HTML, CSS, JS" or "Also make mobile version" or anything custom. AI understands plain language.</p>
+          <div class="step-tags">
+            <span class="tag">Natural Language</span>
+            <span class="tag">Custom Rules</span>
+          </div>
+        </div>
+
+        <div class="step-connector" aria-hidden="true">
+          <div class="connector-line"></div>
+          <div class="connector-arrow">→</div>
+        </div>
+
+        <div class="step-card">
+          <div class="step-icon-wrap" style="--accent:#00FF9C">
+            <div class="step-icon">
+              <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+              </svg>
+            </div>
+          </div>
+          <div class="step-num">03</div>
+          <h3>Download Clean ZIP</h3>
+          <p>Get all your pages neatly separated — <code>.html</code>, <code>.css</code>, <code>.js</code>, <code>mobile.html</code>, <code>mobile.css</code> — organized in one ZIP.</p>
+          <div class="step-tags">
+            <span class="tag">.html</span>
+            <span class="tag">.css</span>
+            <span class="tag">.js</span>
+            <span class="tag">mobile.*</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Output preview -->
+      <div class="output-preview">
+        <div class="preview-header">
+          <span class="preview-title">Output Structure</span>
+          <span class="preview-badge">Example: 3-page site</span>
+        </div>
+        <div class="preview-tree">
+          <div class="tree-folder">
+            <span class="tree-icon folder">📦</span>
+            <span class="tree-name">your-website-clean.zip</span>
+          </div>
+          <div class="tree-children">
+            <div class="tree-item">
+              <span class="tree-icon html">⬡</span>
+              <span class="tree-name">index.html</span>
+              <span class="tree-badge html-badge">HTML</span>
+            </div>
+            <div class="tree-item">
+              <span class="tree-icon css">◈</span>
+              <span class="tree-name">index.css</span>
+              <span class="tree-badge css-badge">CSS</span>
+            </div>
+            <div class="tree-item">
+              <span class="tree-icon js">◇</span>
+              <span class="tree-name">index.js</span>
+              <span class="tree-badge js-badge">JS</span>
+            </div>
+            <div class="tree-item">
+              <span class="tree-icon mobile">◉</span>
+              <span class="tree-name">index.mobile.html</span>
+              <span class="tree-badge mobile-badge">Mobile</span>
+            </div>
+            <div class="tree-separator">— — —</div>
+            <div class="tree-item">
+              <span class="tree-icon html">⬡</span>
+              <span class="tree-name">about.html</span>
+              <span class="tree-badge html-badge">HTML</span>
+            </div>
+            <div class="tree-item">
+              <span class="tree-icon css">◈</span>
+              <span class="tree-name">about.css</span>
+              <span class="tree-badge css-badge">CSS</span>
+            </div>
+            <div class="tree-item muted">
+              <span class="tree-icon">···</span>
+              <span class="tree-name">and so on for all pages</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ░░ FEATURES ░░ -->
+  <section class="section features" id="features">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-eyebrow">Capabilities</span>
+        <h2 class="section-title">Everything You Need</h2>
+        <p class="section-desc">Built for real developer workflows</p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card feature-large">
+          <div class="feature-visual">
+            <div class="code-split-demo">
+              <div class="code-blob">
+                <div class="blob-header">messy.html</div>
+                <div class="blob-lines">
+                  <span class="bl html-c">&lt;html&gt;</span>
+                  <span class="bl css-c">&lt;style&gt; .nav{...} &lt;/style&gt;</span>
+                  <span class="bl html-c">&lt;body&gt;&lt;nav&gt;...&lt;/nav&gt;</span>
+                  <span class="bl js-c">&lt;script&gt; init() &lt;/script&gt;</span>
+                  <span class="bl html-c">&lt;/body&gt;&lt;/html&gt;</span>
+                </div>
+              </div>
+              <div class="split-arrow">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M5 12h14M12 5l7 7-7 7"/>
+                </svg>
+              </div>
+              <div class="split-results">
+                <div class="split-file html-file">index.html</div>
+                <div class="split-file css-file">index.css</div>
+                <div class="split-file js-file">index.js</div>
+              </div>
+            </div>
+          </div>
+          <h3>Intelligent Code Separation</h3>
+          <p>Parses your HTML and intelligently extracts all <code>&lt;style&gt;</code> blocks into <code>.css</code>, all <code>&lt;script&gt;</code> blocks into <code>.js</code>, and leaves clean semantic HTML behind — with proper link/script tags auto-injected.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon" style="background: linear-gradient(135deg, #00D4FF22, #00D4FF44)">
+            <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="#00D4FF" stroke-width="2">
+              <path d="M12 18.5a6.5 6.5 0 100-13 6.5 6.5 0 000 13z"/>
+              <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2"/>
+            </svg>
+          </div>
+          <h3>Bulk Processing</h3>
+          <p>Upload a ZIP with 40 pages and get all of them processed simultaneously. No one-by-one uploads, no repetitive work.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon" style="background: linear-gradient(135deg, #7B61FF22, #7B61FF44)">
+            <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="#7B61FF" stroke-width="2">
+              <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
+              <line x1="12" y1="18" x2="12.01" y2="18"/>
+            </svg>
+          </div>
+          <h3>Mobile Version Generator</h3>
+          <p>Auto-generates responsive mobile versions with proper media queries, touch targets, and mobile-first layout adjustments for each page.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon" style="background: linear-gradient(135deg, #00FF9C22, #00FF9C44)">
+            <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="#00FF9C" stroke-width="2">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+            </svg>
+          </div>
+          <h3>AI Instructions</h3>
+          <p>Tell the AI in plain language what to do. "Move all animations to a separate file" or "Add dark mode CSS" — it understands intent, not just commands.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon" style="background: linear-gradient(135deg, #FF6B6B22, #FF6B6B44)">
+            <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="#FF6B6B" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+          </div>
+          <h3>100% Private</h3>
+          <p>Your code never leaves your browser unless you choose. Processing happens locally where possible. No account, no data storage.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon" style="background: linear-gradient(135deg, #FFB86C22, #FFB86C44)">
+            <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="#FFB86C" stroke-width="2">
+              <polyline points="16 18 22 12 16 6"/>
+              <polyline points="8 6 2 12 8 18"/>
+            </svg>
+          </div>
+          <h3>Auto Link Injection</h3>
+          <p>After separating, CodePeeler auto-injects the correct <code>&lt;link&gt;</code> and <code>&lt;script&gt;</code> tags so your pages work immediately without any manual editing.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ░░ TOOL SECTION ░░ -->
+  <section class="section tool-section" id="tool">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-eyebrow">Try It Now</span>
+        <h2 class="section-title">Peel Your Code</h2>
+        <p class="section-desc">Upload, instruct, download. Free forever.</p>
+      </div>
+
+      <div class="tool-wrapper">
+        <!-- Left: Upload -->
+        <div class="tool-panel upload-panel">
+          <div class="panel-header">
+            <span class="panel-icon">📂</span>
+            <span class="panel-title">Upload Files</span>
+          </div>
+
+          <div class="dropzone" id="dropzone">
+            <div class="dz-inner">
+              <div class="dz-icon">
+                <svg width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                  <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                </svg>
+              </div>
+              <p class="dz-title">Drop your files here</p>
+              <p class="dz-subtitle">Supports <strong>.html</strong> or <strong>.zip</strong> files (multiple .html pages)</p>
+              <button class="btn btn-outline" id="browseBtn">Browse Files</button>
+              <input type="file" id="fileInput" accept=".html,.zip" multiple hidden />
+            </div>
+          </div>
+
+          <div class="file-list" id="fileList" style="display:none">
+            <div class="file-list-header">
+              <span>Uploaded Files</span>
+              <button class="clear-btn" id="clearBtn">Clear all</button>
+            </div>
+            <div class="file-items" id="fileItems"></div>
+          </div>
+        </div>
+
+        <!-- Right: Instructions + Options -->
+        <div class="tool-panel options-panel">
+          <div class="panel-header">
+            <span class="panel-icon">⚙️</span>
+            <span class="panel-title">Instructions</span>
+          </div>
+
+          <div class="options-group">
+            <label class="options-label">Quick Presets</label>
+            <div class="preset-chips">
+              <button class="chip active" data-preset="separate">Separate HTML/CSS/JS</button>
+              <button class="chip" data-preset="mobile">+ Mobile Version</button>
+              <button class="chip" data-preset="minify">+ Minify CSS/JS</button>
+              <button class="chip" data-preset="darkmode">+ Dark Mode CSS</button>
+            </div>
+          </div>
+
+          <div class="options-group">
+            <label class="options-label" for="customInstructions">Custom AI Instructions</label>
+            <textarea
+              id="customInstructions"
+              class="ai-textarea"
+              placeholder="Example: Separate all files, create mobile versions, move all animation CSS to a separate animations.css file, and add comments to the JS code..."
+              rows="5"
+            ></textarea>
+          </div>
+
+          <div class="options-group">
+            <label class="options-label">Output Options</label>
+            <div class="toggle-list">
+              <label class="toggle-item">
+                <div class="toggle-info">
+                  <span class="toggle-name">Separate HTML structure</span>
+                  <span class="toggle-desc">Extract clean .html from each page</span>
+                </div>
+                <input type="checkbox" class="toggle-check" id="optHtml" checked />
+                <div class="toggle-switch"></div>
+              </label>
+              <label class="toggle-item">
+                <div class="toggle-info">
+                  <span class="toggle-name">Extract CSS files</span>
+                  <span class="toggle-desc">All style blocks into .css per page</span>
+                </div>
+                <input type="checkbox" class="toggle-check" id="optCss" checked />
+                <div class="toggle-switch"></div>
+              </label>
+              <label class="toggle-item">
+                <div class="toggle-info">
+                  <span class="toggle-name">Extract JS files</span>
+                  <span class="toggle-desc">All script blocks into .js per page</span>
+                </div>
+                <input type="checkbox" class="toggle-check" id="optJs" checked />
+                <div class="toggle-switch"></div>
+              </label>
+              <label class="toggle-item">
+                <div class="toggle-info">
+                  <span class="toggle-name">Generate mobile version</span>
+                  <span class="toggle-desc">Responsive .mobile.html + .mobile.css</span>
+                </div>
+                <input type="checkbox" class="toggle-check" id="optMobile" />
+                <div class="toggle-switch"></div>
+              </label>
+              <label class="toggle-item">
+                <div class="toggle-info">
+                  <span class="toggle-name">Auto-inject link tags</span>
+                  <span class="toggle-desc">Add &lt;link&gt; and &lt;script&gt; in HTML</span>
+                </div>
+                <input type="checkbox" class="toggle-check" id="optLinks" checked />
+                <div class="toggle-switch"></div>
+              </label>
+            </div>
+          </div>
+
+          <button class="btn btn-primary btn-full" id="processBtn" disabled>
+            <span id="processBtnText">Upload files first</span>
+            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Processing / Results -->
+      <div class="results-area" id="resultsArea" style="display:none">
+        <div class="results-header">
+          <div class="results-status" id="resultsStatus">
+            <div class="status-spinner" id="statusSpinner"></div>
+            <span id="statusText">Processing your files...</span>
+          </div>
+        </div>
+
+        <div class="log-terminal" id="logTerminal">
+          <div class="terminal-header">
+            <div class="terminal-dots">
+              <span></span><span></span><span></span>
+            </div>
+            <span class="terminal-title">CodePeeler Output</span>
+          </div>
+          <div class="terminal-body" id="terminalBody">
+            <div class="log-line"><span class="log-dim">$</span> Initializing CodePeeler...</div>
+          </div>
+        </div>
+
+        <div class="download-area" id="downloadArea" style="display:none">
+          <div class="download-card">
+            <div class="download-icon">📦</div>
+            <div class="download-info">
+              <div class="download-title" id="downloadTitle">your-website-clean.zip</div>
+              <div class="download-meta" id="downloadMeta">Ready to download</div>
+            </div>
+            <button class="btn btn-primary" id="downloadBtn">
+              Download ZIP
+              <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            </button>
+          </div>
+          <div class="output-summary" id="outputSummary"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ░░ FOOTER ░░ -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <a href="#" class="nav-logo">
+            <span class="logo-icon">⟨/⟩</span>
+            <span class="logo-text">CodePeeler</span>
+          </a>
+          <p>Clean code, zero hassle. Built for developers who deserve better tools.</p>
+        </div>
+        <div class="footer-links">
+          <div class="footer-col">
+            <span class="footer-col-title">Tool</span>
+            <a href="#tool">Try Now</a>
+            <a href="#how-it-works">How it Works</a>
+            <a href="#features">Features</a>
+          </div>
+          <div class="footer-col">
+            <span class="footer-col-title">Project</span>
+            <a href="https://github.com" target="_blank" rel="noopener">GitHub</a>
+            <a href="#">Open Source</a>
+            <a href="#">Report Bug</a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>© 2025 CodePeeler. Free & Open Source.</span>
+        <span>Built with ❤ for developers</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
