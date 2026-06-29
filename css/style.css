@@ -340,6 +340,36 @@ code {
 .face-line.js-line   { background: rgba(255,184,108,0.5); }
 .face-line.mobile-line { background: rgba(0,255,156,0.5); }
 
+/* Code text inside cube faces */
+.face-code {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  overflow: hidden;
+}
+.code-line {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.58rem;
+  line-height: 1.5;
+  white-space: nowrap;
+  color: rgba(255,255,255,0.45);
+}
+.code-line.indent  { padding-left: 10px; }
+.code-line.indent2 { padding-left: 20px; }
+
+/* Syntax colors */
+.c-tag  { color: rgba(0,212,255,0.85); }
+.c-attr { color: rgba(255,184,108,0.85); }
+.c-str  { color: rgba(0,255,156,0.85); }
+.c-sel  { color: rgba(123,97,255,0.9); }
+.c-prop { color: rgba(0,212,255,0.8); }
+.c-val  { color: rgba(255,107,107,0.85); }
+.c-kw   { color: rgba(123,97,255,0.9); }
+.c-fn   { color: rgba(255,184,108,0.85); }
+.c-at   { color: rgba(123,97,255,0.9); }
+.c-num  { color: rgba(0,255,156,0.85); }
+
 /* Floating tags */
 .floating-tag {
   position: absolute;
