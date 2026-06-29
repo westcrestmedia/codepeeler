@@ -445,3 +445,289 @@ function formatBytes(bytes) {
   if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
   return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
 }
+
+// ─── Cube Typing Animation ────────────────────
+// Cube rotates at 18s/360deg = 0.333 deg/ms
+// Faces: front=0, right=90, back=180, left=270
+// Visible threshold: face angle within ±70deg of camera (front view)
+
+const CUBE_PERIOD   = 18000; // ms for full rotation
+const VISIBLE_RANGE = 80;    // degrees either side of 0/360 = visible
+const CHAR_SPEED    = 42;    // ms per character
+const LINE_PAUSE    = 200;   // ms pause after each line
+const MAX_VISIBLE   = 6;     // max lines shown at once (scroll effect)
+
+const faceAngles = {
+  'face-front': 0,
+  'face-right':  90,
+  'face-back':  180,
+  'face-left':  270,
+};
+
+// Longer, richer code per face — more characters to type
+const cubeCodeLines = {
+  'face-front': [
+    { text: '<!DOCTYPE html>', cls: 'c-tag' },
+    { text: '<html lang="en">', cls: 'c-tag' },
+    { text: '<head>', cls: 'c-tag' },
+    { text: '  <meta charset="UTF-8">', cls: 'c-tag' },
+    { text: '  <title>CodePeeler</title>', cls: 'c-tag' },
+    { text: '  <link rel="stylesheet"', cls: 'c-tag' },
+    { text: '    href="style.css">', cls: 'c-str' },
+    { text: '</head>', cls: 'c-tag' },
+    { text: '<body>', cls: 'c-tag' },
+    { text: '<nav class="navbar">', cls: 'c-tag' },
+    { text: '  <a class="logo">', cls: 'c-tag' },
+    { text: '    <span>⟨/⟩</span>', cls: 'c-tag' },
+    { text: '    CodePeeler', cls: '' },
+    { text: '  </a>', cls: 'c-tag' },
+    { text: '  <ul class="links">', cls: 'c-tag' },
+    { text: '    <li><a href="#tool">', cls: 'c-tag' },
+    { text: '      Try Now', cls: '' },
+    { text: '    </a></li>', cls: 'c-tag' },
+    { text: '  </ul>', cls: 'c-tag' },
+    { text: '</nav>', cls: 'c-tag' },
+    { text: '<section class="hero">', cls: 'c-tag' },
+    { text: '  <h1>One Messy File.</h1>', cls: 'c-tag' },
+    { text: '  <p>Upload entangled HTML</p>', cls: 'c-tag' },
+    { text: '  <a href="#tool">', cls: 'c-tag' },
+    { text: '    Start Peeling →', cls: '' },
+    { text: '  </a>', cls: 'c-tag' },
+    { text: '</section>', cls: 'c-tag' },
+    { text: '<script src="app.js">', cls: 'c-tag' },
+    { text: '</script>', cls: 'c-tag' },
+    { text: '</body>', cls: 'c-tag' },
+    { text: '</html>', cls: 'c-tag' },
+  ],
+  'face-back': [
+    { text: '/* CodePeeler Styles */', cls: 'c-comment' },
+    { text: ':root {', cls: 'c-sel' },
+    { text: '  --bg: #080811;', cls: 'c-prop' },
+    { text: '  --cyan: #00D4FF;', cls: 'c-prop' },
+    { text: '  --purple: #7B61FF;', cls: 'c-prop' },
+    { text: '  --green: #00FF9C;', cls: 'c-prop' },
+    { text: '}', cls: '' },
+    { text: 'body {', cls: 'c-sel' },
+    { text: '  background: var(--bg);', cls: 'c-prop' },
+    { text: '  color: #E8E8F0;', cls: 'c-val' },
+    { text: '  font-family: Inter;', cls: 'c-prop' },
+    { text: '  overflow-x: hidden;', cls: 'c-prop' },
+    { text: '}', cls: '' },
+    { text: '.navbar {', cls: 'c-sel' },
+    { text: '  position: fixed;', cls: 'c-prop' },
+    { text: '  top: 0; left: 0;', cls: 'c-prop' },
+    { text: '  backdrop-filter:', cls: 'c-prop' },
+    { text: '    blur(20px);', cls: 'c-val' },
+    { text: '  z-index: 100;', cls: 'c-prop' },
+    { text: '}', cls: '' },
+    { text: '.hero {', cls: 'c-sel' },
+    { text: '  min-height: 100vh;', cls: 'c-prop' },
+    { text: '  display: flex;', cls: 'c-prop' },
+    { text: '  align-items: center;', cls: 'c-prop' },
+    { text: '}', cls: '' },
+    { text: '.hero-title {', cls: 'c-sel' },
+    { text: '  font-size: clamp(', cls: 'c-prop' },
+    { text: '    2.5rem, 6vw, 4rem);', cls: 'c-val' },
+    { text: '  font-weight: 700;', cls: 'c-prop' },
+    { text: '}', cls: '' },
+    { text: '.btn-primary {', cls: 'c-sel' },
+    { text: '  background: linear-gradient(', cls: 'c-prop' },
+    { text: '    135deg, cyan, purple);', cls: 'c-val' },
+    { text: '}', cls: '' },
+  ],
+  'face-left': [
+    { text: '/* CodePeeler App */', cls: 'c-comment' },
+    { text: 'const state = {', cls: 'c-kw' },
+    { text: '  files: [],', cls: '' },
+    { text: '  processing: false,', cls: '' },
+    { text: '  outputZip: null,', cls: '' },
+    { text: '};', cls: '' },
+    { text: 'const $ = id =>', cls: 'c-kw' },
+    { text: '  document.getElementById(id);', cls: 'c-fn' },
+    { text: 'const dropzone = $("dropzone");', cls: 'c-fn' },
+    { text: 'const processBtn = $("processBtn");', cls: 'c-fn' },
+    { text: 'async function handleFiles(files) {', cls: 'c-kw' },
+    { text: '  for (const file of files) {', cls: 'c-kw' },
+    { text: '    if (file.name.endsWith(', cls: '' },
+    { text: '        ".zip")) {', cls: 'c-str' },
+    { text: '      await extractZip(file);', cls: 'c-fn' },
+    { text: '    } else {', cls: 'c-kw' },
+    { text: '      const txt =', cls: 'c-kw' },
+    { text: '        await readFile(file);', cls: 'c-fn' },
+    { text: '      addFile(file.name, txt);', cls: 'c-fn' },
+    { text: '    }', cls: '' },
+    { text: '  }', cls: '' },
+    { text: '  renderFileList();', cls: 'c-fn' },
+    { text: '}', cls: '' },
+    { text: 'async function processFile(f) {', cls: 'c-kw' },
+    { text: '  const res = await fetch(', cls: 'c-fn' },
+    { text: '    API_URL, { method: "POST",', cls: 'c-str' },
+    { text: '    body: JSON.stringify(f)', cls: 'c-fn' },
+    { text: '  });', cls: '' },
+    { text: '  return res.json();', cls: 'c-kw' },
+    { text: '}', cls: '' },
+    { text: 'startCubeTyping();', cls: 'c-fn' },
+  ],
+  'face-right': [
+    { text: '/* Responsive Styles */', cls: 'c-comment' },
+    { text: '@media (max-width: 900px) {', cls: 'c-at' },
+    { text: '  .cube-scene {', cls: 'c-sel' },
+    { text: '    display: none;', cls: 'c-prop' },
+    { text: '  }', cls: '' },
+    { text: '  .hero-content {', cls: 'c-sel' },
+    { text: '    max-width: 100%;', cls: 'c-prop' },
+    { text: '  }', cls: '' },
+    { text: '  .steps-grid {', cls: 'c-sel' },
+    { text: '    flex-direction: column;', cls: 'c-prop' },
+    { text: '  }', cls: '' },
+    { text: '  .tool-wrapper {', cls: 'c-sel' },
+    { text: '    grid-template-columns: 1fr;', cls: 'c-prop' },
+    { text: '  }', cls: '' },
+    { text: '}', cls: '' },
+    { text: '@media (max-width: 600px) {', cls: 'c-at' },
+    { text: '  .hero {', cls: 'c-sel' },
+    { text: '    padding: 100px 20px 60px;', cls: 'c-prop' },
+    { text: '  }', cls: '' },
+    { text: '  .features-grid {', cls: 'c-sel' },
+    { text: '    grid-template-columns: 1fr;', cls: 'c-prop' },
+    { text: '  }', cls: '' },
+    { text: '  .footer-bottom {', cls: 'c-sel' },
+    { text: '    flex-direction: column;', cls: 'c-prop' },
+    { text: '    text-align: center;', cls: 'c-prop' },
+    { text: '  }', cls: '' },
+    { text: '}', cls: '' },
+    { text: '@media (prefers-reduced-motion) {', cls: 'c-at' },
+    { text: '  .cube { animation: none; }', cls: 'c-prop' },
+    { text: '}', cls: '' },
+  ],
+};
+
+// Track per-face state
+const faceStates = {};
+
+function isFaceVisible(faceClass) {
+  const startTime = faceStates[faceClass]?.startTime || cubeStartTime;
+  const elapsed = (Date.now() - cubeStartTime) % CUBE_PERIOD;
+  const currentAngle = (elapsed / CUBE_PERIOD) * 360; // 0..360
+  const faceAngle = faceAngles[faceClass];
+  // Normalize angle difference to -180..180
+  let diff = ((currentAngle - faceAngle) + 360) % 360;
+  if (diff > 180) diff -= 360;
+  return Math.abs(diff) <= VISIBLE_RANGE;
+}
+
+let cubeStartTime = Date.now();
+
+function initFaceState(faceClass) {
+  const face = document.querySelector('.' + faceClass);
+  if (!face) return;
+  let container = face.querySelector('.face-code');
+  if (!container) {
+    container = document.createElement('div');
+    container.className = 'face-code';
+    face.appendChild(container);
+  }
+  faceStates[faceClass] = {
+    container,
+    lineIndex: 0,
+    charIndex: 0,
+    currentLineEl: null,
+    typing: false,
+    wasVisible: false,
+    timer: null,
+  };
+}
+
+function resetFace(faceClass) {
+  const s = faceStates[faceClass];
+  if (!s) return;
+  clearTimeout(s.timer);
+  s.container.innerHTML = '';
+  s.lineIndex = 0;
+  s.charIndex = 0;
+  s.currentLineEl = null;
+  s.typing = false;
+}
+
+function typeNextChar(faceClass) {
+  const s = faceStates[faceClass];
+  if (!s) return;
+
+  // Stop if face went invisible
+  if (!isFaceVisible(faceClass)) {
+    s.typing = false;
+    resetFace(faceClass);
+    return;
+  }
+
+  const lines = cubeCodeLines[faceClass];
+  if (!lines) return;
+
+  // Wrap around continuously
+  if (s.lineIndex >= lines.length) {
+    s.lineIndex = 0;
+  }
+
+  const { text, cls } = lines[s.lineIndex];
+
+  // Start new line element
+  if (s.charIndex === 0) {
+    s.currentLineEl = document.createElement('div');
+    s.currentLineEl.className = 'code-line' + (cls ? ' ' + cls : '');
+    const cursor = document.createElement('span');
+    cursor.className = 'cube-cursor';
+    cursor.textContent = '▋';
+    s.currentLineEl.appendChild(cursor);
+    s.container.appendChild(s.currentLineEl);
+
+    // Scroll effect: remove oldest line if too many visible
+    const allLines = s.container.querySelectorAll('.code-line');
+    if (allLines.length > MAX_VISIBLE) {
+      allLines[0].remove();
+    }
+  }
+
+  if (s.charIndex < text.length) {
+    // Type one character
+    const cursor = s.currentLineEl.querySelector('.cube-cursor');
+    const textNode = document.createTextNode(text[s.charIndex]);
+    s.currentLineEl.insertBefore(textNode, cursor);
+    s.charIndex++;
+    s.timer = setTimeout(() => typeNextChar(faceClass), CHAR_SPEED);
+  } else {
+    // Line done
+    const cursor = s.currentLineEl.querySelector('.cube-cursor');
+    if (cursor) cursor.remove();
+    s.lineIndex++;
+    s.charIndex = 0;
+    s.currentLineEl = null;
+    s.timer = setTimeout(() => typeNextChar(faceClass), LINE_PAUSE);
+  }
+}
+
+function startTypingOnFace(faceClass) {
+  const s = faceStates[faceClass];
+  if (!s || s.typing) return;
+  s.typing = true;
+  typeNextChar(faceClass);
+}
+
+function startCubeTyping() {
+  // Init all face states
+  Object.keys(faceAngles).forEach(initFaceState);
+
+  // Poll every 200ms to check which faces are visible
+  setInterval(() => {
+    Object.keys(faceAngles).forEach(faceClass => {
+      const s = faceStates[faceClass];
+      if (!s) return;
+      const visible = isFaceVisible(faceClass);
+      if (visible && !s.typing) {
+        startTypingOnFace(faceClass);
+      }
+      // If it just became invisible, reset will happen inside typeNextChar
+    });
+  }, 200);
+}
+
+startCubeTyping();
