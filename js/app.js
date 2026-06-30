@@ -187,7 +187,7 @@ async function startProcessing() {
     js:       $('optJs').checked,
     mobile:   $('optMobile').checked,
     links:    $('optLinks').checked,
-    darkmode: document.querySelector('[data-preset="darkmode"]')?.classList.contains('active') || false,
+    darkmode: document.querySelector('[data-preset="darkmode"]') && document.querySelector('[data-preset="darkmode"]').classList.contains('active')) || false,
     minify:   document.querySelector('[data-preset="minify"]')?.classList.contains('active') || false,
   };
 
@@ -334,7 +334,7 @@ async function processFileWithAI(file, opts, instructions) {
   }
 
   const data = await response.json();
-  const text = data.content?.map(c => c.text || '').join('') || '';
+  const text = (data.content && data.content.map(c => c.text || '').join('')) || '';
 
   try {
     const clean = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
