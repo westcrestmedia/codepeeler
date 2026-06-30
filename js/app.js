@@ -278,19 +278,28 @@ async function processFileWithAI(file, opts, instructions) {
 
   log(`  → Sending to AI (${formatBytes(file.content.length)})...`, 'info');
 
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 1000,
-      messages: [{ role: 'user', content: prompt }]
-    })
-  });
+  const WORKER_URL = 'https://codepeeler-proxy.aakif2015.workers.dev';
+
+  let response;
+  try {
+    response = await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+  } catch (networkErr) {
+    // Network-level failure (CORS, offline, blocked request, etc.)
+    log(`  ⚠ AI unreachable (${networkErr.message}) — using local parser`, 'warn');
+    return localParse(file.content, opts);
+  }
 
   if (!response.ok) {
     // Fallback to local parsing if API unavailable
-    log(`  ⚠ API unavailable — using local parser`, 'warn');
+    log(`  ⚠ API unavailable (HTTP ${response.status}) — using local parser`, 'warn');
     return localParse(file.content, opts);
   }
 
