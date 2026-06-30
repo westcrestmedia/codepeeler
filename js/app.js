@@ -182,11 +182,13 @@ async function startProcessing() {
   processBtn.disabled = true;
 
   const opts = {
-    html:   $('optHtml').checked,
-    css:    $('optCss').checked,
-    js:     $('optJs').checked,
-    mobile: $('optMobile').checked,
-    links:  $('optLinks').checked,
+    html:     $('optHtml').checked,
+    css:      $('optCss').checked,
+    js:       $('optJs').checked,
+    mobile:   $('optMobile').checked,
+    links:    $('optLinks').checked,
+    darkmode: document.querySelector('[data-preset="darkmode"]')?.classList.contains('active') || false,
+    minify:   document.querySelector('[data-preset="minify"]')?.classList.contains('active') || false,
   };
 
   const instructions = customInstructions.value.trim() ||
@@ -202,19 +204,20 @@ async function startProcessing() {
 
   log('Initializing CodePeeler...', 'info');
   log(`Found ${state.files.length} HTML file(s) to process.`, 'info');
-  log(`Options: HTML=${opts.html}, CSS=${opts.css}, JS=${opts.js}, Mobile=${opts.mobile}`, 'info');
+  log(`Options: HTML=${opts.html}, CSS=${opts.css}, JS=${opts.js}, Mobile=${opts.mobile}, DarkMode=${opts.darkmode}, Minify=${opts.minify}`, 'info');
   log(`Instructions: "${instructions.slice(0, 80)}..."`, 'info');
   log('', '');
 
   await loadJSZip();
   const zip = new JSZip();
   const outputFolder = zip.folder('codepeeler-output');
-  const stats = { html: 0, css: 0, js: 0, mobile: 0 };
+  const stats = { html: 0, css: 0, js: 0, mobile: 0, dark: 0, minify: 0 };
 
   for (const file of state.files) {
     log(`Processing: ${file.name}`, 'file');
     try {
-      const result = await processFileWithAI(file, opts, instructions);
+      log(`  → Extracting (${formatBytes(file.content.length)})...`, 'info');
+      const result = await localParse(file.content, opts);
       const base = file.name.replace(/\.(html|htm)$/i, '');
 
       if (opts.html) {
@@ -237,6 +240,31 @@ async function startProcessing() {
         stats.mobile++;
         log(`  ✔ ${base}.mobile.html + .mobile.css generated`, 'success');
       }
+      if (opts.darkmode && result.darkCss) {
+        outputFolder.file(`${base}.dark.css`, result.darkCss);
+        stats.dark++;
+        log(`  ✔ ${base}.dark.css generated`, 'success');
+      }
+      if (opts.minify) {
+        let minifiedAny = false;
+        if (opts.css && result.css.trim()) {
+          const minCss = minifyCss(result.css);
+          if (minCss) {
+            outputFolder.file(`${base}.min.css`, minCss);
+            log(`  ✔ ${base}.min.css (${formatBytes(result.css.length)} → ${formatBytes(minCss.length)})`, 'success');
+            minifiedAny = true;
+          }
+        }
+        if (opts.js && result.js.trim()) {
+          const minJs = await minifyJs(result.js);
+          if (minJs) {
+            outputFolder.file(`${base}.min.js`, minJs);
+            log(`  ✔ ${base}.min.js (${formatBytes(result.js.length)} → ${formatBytes(minJs.length)})`, 'success');
+            minifiedAny = true;
+          }
+        }
+        if (minifiedAny) stats.minify++;
+      }
       log(`  ✔ ${base}.html saved`, 'success');
     } catch (err) {
       log(`  ✖ Error: ${err.message}`, 'error');
@@ -255,7 +283,7 @@ async function startProcessing() {
   statusSpinner.className = 'status-spinner done';
   statusText.textContent = '✓ Processing complete!';
 
-  const totalFiles = stats.html + stats.css + stats.js + stats.mobile * 2;
+  const totalFiles = stats.html + stats.css + stats.js + stats.mobile * 2 + stats.dark + stats.minify * 2;
   downloadTitle.textContent = 'codepeeler-output.zip';
   downloadMeta.textContent = `${totalFiles} files ready · ${formatBytes(blob.size)}`;
 
@@ -264,6 +292,8 @@ async function startProcessing() {
     <div class="summary-item"><div class="summary-label">CSS Files</div><div class="summary-value" style="color:var(--purple)">${stats.css}</div></div>
     <div class="summary-item"><div class="summary-label">JS Files</div><div class="summary-value" style="color:var(--orange)">${stats.js}</div></div>
     <div class="summary-item"><div class="summary-label">Mobile Versions</div><div class="summary-value" style="color:var(--green)">${stats.mobile}</div></div>
+    <div class="summary-item"><div class="summary-label">Dark Mode CSS</div><div class="summary-value" style="color:var(--cyan)">${stats.dark}</div></div>
+    <div class="summary-item"><div class="summary-label">Minified Files</div><div class="summary-value" style="color:var(--purple)">${stats.minify}</div></div>
   `;
 
   downloadArea.style.display = 'block';
@@ -349,6 +379,39 @@ Rules:
 - Return empty string "" for fields that have no content`;
 }
 
+// ─── Minify helpers (CSSO + Terser — local, free, no AI) ──
+function minifyCss(cssText) {
+  try {
+    if (typeof csso === 'undefined') {
+      log(`  ⚠ CSSO library not loaded — skipping CSS minify`, 'warn');
+      return null;
+    }
+    const result = csso.minify(cssText);
+    return result.css;
+  } catch (err) {
+    log(`  ⚠ CSS minify failed: ${err.message}`, 'warn');
+    return null;
+  }
+}
+
+async function minifyJs(jsText) {
+  try {
+    if (typeof Terser === 'undefined') {
+      log(`  ⚠ Terser library not loaded — skipping JS minify`, 'warn');
+      return null;
+    }
+    const result = await Terser.minify(jsText, { compress: true, mangle: true });
+    if (result.error) {
+      log(`  ⚠ JS minify failed: ${result.error.message}`, 'warn');
+      return null;
+    }
+    return result.code;
+  } catch (err) {
+    log(`  ⚠ JS minify failed: ${err.message}`, 'warn');
+    return null;
+  }
+}
+
 // ─── Local parser (fallback without API) ──────
 function localParse(htmlContent, opts) {
   const parser = new DOMParser();
@@ -412,7 +475,72 @@ function localParse(htmlContent, opts) {
     );
   }
 
-  return { html: cleanHtml, css: cssContent, js: jsContent, mobileHtml, mobileCss };
+  // Dark mode CSS (local template — no AI)
+  let darkCss = '';
+  if (opts.darkmode) {
+    darkCss = generateDarkModeCss(cssContent);
+  }
+
+  return { html: cleanHtml, css: cssContent, js: jsContent, mobileHtml, mobileCss, darkCss };
+}
+
+// ─── Dark mode generator (local, template-based, no AI) ──
+// Strategy:
+// 1. If the site already uses CSS custom properties (--var: value),
+//    we override just those variables under prefers-color-scheme — safest & cleanest.
+// 2. Otherwise, fall back to a generic invert-friendly override using
+//    common selectors (body, headings, links, cards, etc).
+function generateDarkModeCss(originalCss) {
+  const varMatches = [...originalCss.matchAll(/(--[\w-]+)\s*:\s*(#[0-9a-fA-F]{3,8}|rgba?\([^)]+\)|[a-zA-Z]+)\s*;/g)];
+
+  if (varMatches.length > 0) {
+    // CSS variables found — generate safe overrides for color-like ones
+    const overrides = varMatches
+      .filter(([, name]) => /color|bg|background|border|text|surface/i.test(name))
+      .map(([, name]) => `  ${name}: var(--dark-${name.replace('--', '')}, inherit);`)
+      .join('\n');
+
+    return `/* Dark Mode — auto-generated (CSS variable overrides) */
+/* NOTE: Review and set actual dark values for each --dark-* variable below */
+@media (prefers-color-scheme: dark) {
+  :root {
+${overrides || '    /* No color-related variables detected */'}
+  }
+}
+`;
+  }
+
+  // Generic fallback — works for most sites without CSS variables
+  return `/* Dark Mode — auto-generated (generic override) */
+/* Review colors below and adjust to match your brand */
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: #0f0f12;
+    color: #e8e8ea;
+  }
+  a {
+    color: #7db8ff;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    color: #ffffff;
+  }
+  header, footer, nav {
+    background-color: #16161a;
+  }
+  .card, [class*="card"], [class*="container"] {
+    background-color: #1c1c22;
+    border-color: #2a2a32;
+  }
+  input, textarea, select {
+    background-color: #1c1c22;
+    color: #e8e8ea;
+    border-color: #2a2a32;
+  }
+  img {
+    opacity: 0.92;
+  }
+}
+`;
 }
 
 // ─── Download ─────────────────────────────────
