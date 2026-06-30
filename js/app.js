@@ -187,7 +187,7 @@ async function startProcessing() {
     js:       $('optJs').checked,
     mobile:   $('optMobile').checked,
     links:    $('optLinks').checked,
-    darkmode: document.querySelector('[data-preset="darkmode"]') && document.querySelector('[data-preset="darkmode"]').classList.contains('active')) || false,
+    darkmode: document.querySelector('[data-preset="darkmode"]') && document.querySelector('[data-preset="darkmode"]').classList.contains('active')) || false
     minify:   document.querySelector('[data-preset="minify"]')?.classList.contains('active') || false,
   };
 
