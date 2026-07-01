@@ -424,9 +424,12 @@ function localParse(htmlContent, opts) {
     if (opts.links) el.remove();
   });
 
-  // Extract JS (inline scripts only, not src)
+  // Extract JS (inline scripts only, not src, and only actual JS types — skip ld+json/json/etc.)
   let jsContent = '';
   doc.querySelectorAll('script:not([src])').forEach(el => {
+    const type = (el.getAttribute('type') || '').toLowerCase().trim();
+    const isJs = type === '' || type === 'text/javascript' || type === 'application/javascript' || type === 'module';
+    if (!isJs) return; // skip application/ld+json, application/json, etc.
     jsContent += el.textContent + '\n\n';
     if (opts.links) el.remove();
   });
